@@ -65,7 +65,7 @@ export default function Home() {
             <p>This is the summary of your personal budget</p>
             <p>Total Income: ${totalIncome}</p>
             <p>Total Expenses: ${calculateTotalExpenses()}</p>
-            <p>Balance: MYR {totalIncome - calculateTotalExpenses()}</p>
+            <p>Balance: ${totalIncome - calculateTotalExpenses()}</p>
           </Card.Text>
           <Link to="/income" className="btn btn-primary me-2">
             Add Income

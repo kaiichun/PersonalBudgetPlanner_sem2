@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { nanoid } from "nanoid";
 import { Link } from "react-router-dom";
 import Button from "react-bootstrap/Button";
@@ -10,6 +10,8 @@ import { BsTrash } from "react-icons/bs";
 export default function Income() {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState(0);
+  const [category, setCategory] = useState("");
+  const [filter, setFilter] = useState("");
   const [incomeList, setIncomeList] = useState([]);
   const [checkedList, setCheckedList] = useState([]);
   const [checkAll, setCheckAll] = useState(false);
@@ -23,6 +25,12 @@ export default function Income() {
     }
   }, []);
 
+  const filteredList = useMemo(() => {
+    return incomeList.filter((i) =>
+      filter === "" ? true : i.category === filter
+    );
+  }, [filter, incomeList]);
+
   const addIncome = () => {
     // 1. clone the list
     const newincomeList = [...incomeList];
@@ -34,6 +42,7 @@ export default function Income() {
         id: nanoid(),
         name: name,
         amount: parseInt(amount),
+        category: category,
       });
 
       // 4. save into the local storage & set the new state for incomeList
@@ -109,9 +118,11 @@ export default function Income() {
 
   const calculateTotal = () => {
     let total = 0;
-    incomeList.forEach((i) => {
-      total += parseInt(i.amount);
-    });
+    incomeList
+      .filter((i) => (filter === "" ? true : i.category === filter))
+      .forEach((i) => {
+        total += parseInt(i.amount);
+      });
     return total;
   };
 
@@ -125,6 +136,18 @@ export default function Income() {
       <Card>
         <Card.Body>
           <Card.Title>Income</Card.Title>
+          <Form.Select
+            className="mb-4"
+            value={filter}
+            onChange={(event) => {
+              setFilter(event.target.value);
+            }}
+          >
+            <option value="">All categories</option>
+            <option value="Salary">Salary</option>
+            <option value="Side Income">Side Income</option>
+            <option value="Others">Others</option>
+          </Form.Select>
           <Table striped bordered hover>
             <thead>
               <tr>
@@ -141,6 +164,7 @@ export default function Income() {
                   />
                 </th>
                 <th>Source</th>
+                <th>Category</th>
                 <th>Amount</th>
                 <th>
                   Actions
@@ -162,8 +186,8 @@ export default function Income() {
               </tr>
             </thead>
             <tbody>
-              {incomeList.length > 0 ? (
-                incomeList.map((i) => {
+              {filteredList.length > 0 ? (
+                filteredList.map((i) => {
                   return (
                     <tr key={i.id}>
                       <td>
@@ -180,6 +204,7 @@ export default function Income() {
                         />
                       </td>
                       <td>{i.name}</td>
+                      <td>{i.category}</td>
                       <td>${i.amount}</td>
                       <td>
                         <Button
@@ -198,12 +223,12 @@ export default function Income() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={3}>No income added yet.</td>
+                  <td colSpan={5}>No income added yet.</td>
                 </tr>
               )}
               <tr>
-                <td>Total</td>
-                <td>${calculateTotal()}</td>
+                <td colSpan={3} className="text-end me-5">Total</td>
+                <td>MYR {calculateTotal()}</td>
                 <td></td>
               </tr>
             </tbody>
@@ -225,6 +250,19 @@ export default function Income() {
                 min={0}
                 onChange={(event) => setAmount(event.target.value)}
               />
+            </Form.Group>
+            <Form.Group>
+              <Form.Select
+                value={category}
+                onChange={(event) => {
+                  setCategory(event.target.value);
+                }}
+              >
+               <option value="">All categories</option>
+            <option value="Salary">Salary</option>
+            <option value="Side Income">Side Income</option>
+            <option value="Others">Others</option>
+              </Form.Select>
             </Form.Group>
             <Button
               variant="primary"
